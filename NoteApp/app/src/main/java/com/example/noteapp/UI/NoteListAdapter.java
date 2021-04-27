@@ -1,12 +1,9 @@
 package com.example.noteapp.UI;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.noteapp.databinding.RecyclerRowBinding;
 import com.example.noteapp.model.Note;
 import com.example.noteapp.DB.NotesDatabase;
-import com.example.noteapp.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +21,21 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
     private List<Note> noteList;
     private NotesDatabase db;
 
-    OnSelectItem onSelectItem;
+    OnSelectItem onSelectItem; //Toast
     public void setOnSelectItem(OnSelectItem onSelectItem) {
         this.onSelectItem = onSelectItem;
+    }
+
+    OnSelectEditButton onSelectEditButton;
+    public void setOnSelectEditButton(OnSelectEditButton onSelectEditButton)
+    {
+        this.onSelectEditButton = onSelectEditButton;
+    }
+
+    OnSelectDeleteButton onSelectDeleteButton;
+    public void setOnSelectDeleteButton(OnSelectDeleteButton onSelectDeleteButton)
+    {
+        this.onSelectDeleteButton = onSelectDeleteButton;
     }
 
     public NoteListAdapter(){
@@ -56,38 +64,23 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
     public void onBindViewHolder(@NonNull NoteListAdapter.MyViewHolder holder, int position) {
 
         holder.onBind(noteList.get(position), position);
-
-        //initialize database
-        holder.itemBinding.noteTitleTextView.setText(this.noteList.get(position).getTitle());
+        //initialize Note
+        Note note = noteList.get(holder.getAdapterPosition());
 
         holder.itemBinding.editButton.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
 
-                //initialize Note
-                Note note = noteList.get(holder.getAdapterPosition());
-                int noteId = note.getNoteId();
-                String noteTitle = note.getTitle();
-                String noteDescription = note.getDescription();
-
-                Intent intent = new Intent(context , AddNewNoteActivity.class);
-                intent.putExtra("noteTitle" , noteTitle);
-                intent.putExtra("noteDescription" , noteDescription);
-                intent.putExtra("noteId" , noteId);
-
-                context.startActivity(intent);
+                onSelectEditButton.passNotesInfoToBeUpdated(note.getNoteId()
+                        , note.getTitle() , note.getDescription());
             }
         });
 
         holder.itemBinding.deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //initialize Note
-                Note note = noteList.get(holder.getAdapterPosition());
-                //delete note from database
-                db = NotesDatabase.getInstance(context);
-                db.noteDao().deleteNote(note);
+
+                onSelectDeleteButton.deleteSelectedNote(note);
 
                 //notify when data is deleted
                 int position = holder.getAdapterPosition();
@@ -124,7 +117,15 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
         }
     }
 
+    //callBack
     interface OnSelectItem{
         void onClick(int position);
+    }
+    //callBack
+    interface OnSelectEditButton {
+        void passNotesInfoToBeUpdated(int noteId , String noteTitle , String noteDescription);
+    }
+    interface OnSelectDeleteButton{
+        void deleteSelectedNote(Note note);
     }
 }

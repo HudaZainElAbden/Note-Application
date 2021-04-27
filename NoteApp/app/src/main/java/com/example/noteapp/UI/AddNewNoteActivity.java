@@ -44,6 +44,7 @@ public class AddNewNoteActivity extends AppCompatActivity {
         onClick();
     }
 
+
     public void onClick()
     {
         activityBinding.saveNoteButton.setOnClickListener(new View.OnClickListener() {

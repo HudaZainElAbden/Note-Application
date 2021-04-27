@@ -30,8 +30,11 @@ public class NoteViewModel extends ViewModel {
 
     public void getNotes(){
         Log.d("lol","get notes");
-
         notes.setValue(dataBase.noteDao().getNotes());
+    }
+
+    public void deleteNote(Note note){
+        dataBase.noteDao().deleteNote(note);
     }
 
 }

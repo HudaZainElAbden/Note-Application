@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,7 +18,8 @@ import com.example.noteapp.R;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements NoteListAdapter.OnSelectEditButton
+        , NoteListAdapter.OnSelectDeleteButton{
 
     private NoteListAdapter noteListAdapter;
     NoteViewModel noteViewModel;
@@ -33,16 +33,25 @@ public class MainActivity extends AppCompatActivity{
 
         ViewModelFactory factory = new ViewModelFactory(this);
         noteViewModel = new ViewModelProvider(this,factory).get(NoteViewModel.class);
-        noteViewModel.getNotes();
 
         initRecyclerView();
-        onClick();
+        onClickAddNewNote();
         subscribeToLiveData();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        noteViewModel.getNotes();
     }
 
     private void initRecyclerView(){
 
         noteListAdapter = new NoteListAdapter();
+        noteListAdapter.setOnSelectEditButton(this);
+        noteListAdapter.setOnSelectDeleteButton(this);
+
+        //callBack
         noteListAdapter.setOnSelectItem(new NoteListAdapter.OnSelectItem() {
             @Override
             public void onClick(int position) {
@@ -56,7 +65,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    public void onClick(){
+    public void onClickAddNewNote(){
         activityMainBinding.addNewNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,4 +84,20 @@ public class MainActivity extends AppCompatActivity{
         });
     }
 
+    //callBack
+    @Override
+    public void passNotesInfoToBeUpdated(int noteId, String noteTitle, String noteDescription) {
+        Intent intent = new Intent(MainActivity.this , AddNewNoteActivity.class);
+        intent.putExtra("noteTitle" , noteTitle);
+        intent.putExtra("noteDescription" , noteDescription);
+        intent.putExtra("noteId" , noteId);
+
+        startActivity(intent);
+
+    }
+
+    @Override
+    public void deleteSelectedNote(Note note) {
+        noteViewModel.deleteNote(note);
+    }
 }
